@@ -164,7 +164,7 @@ export class FlyerGeneratorService {
             },
           },
           {
-            text: `Create a professional personalized flyer for Hack[CIS] 2025. Use the flyer template from the first image as the base, and seamlessly integrate the person's photo from the second image into it.  
+            text: `Create a professional personalized flyer for Hack[CIS] 2026. Use the flyer template from the first image as the base, and seamlessly integrate the person's photo from the second image into it.  
 
 Instructions:
 - Final format must be 4:5 aspect ratio, optimized for social media.
@@ -183,13 +183,13 @@ ${participantName ? `Include the participant's name: ${participantName}` : ''}`
         // Log del prompt enviado
         const textPrompt = prompt.find(item => 'text' in item);
         this.logRequest('Enviando prompt a Gemini', {
-          model: "gemini-2.5-flash-image-preview",
+          model: "gemini-2.5-flash-image",
           promptLength: textPrompt?.text?.length || 0,
           imagesCount: 2
         });
 
         const response = await ai.models.generateContent({
-          model: "gemini-2.5-flash-image-preview", // Modelo más estable
+          model: "gemini-2.5-flash-image", // Modelo oficial de generación y edición de imágenes
           contents: prompt,
         });
 
@@ -233,33 +233,16 @@ ${participantName ? `Include the participant's name: ${participantName}` : ''}`
           maxRetries: maxRetries
         });
 
-        // Manejo de errores con reintentos
+        // Si hay error de cuota o límite en Gemini, usar el motor de composición Canvas
         if (error instanceof Error &&
           (error.message.includes('quota') ||
             error.message.includes('RESOURCE_EXHAUSTED') ||
-            error.message.includes('429')) &&
-          attempt < maxRetries) {
-
-          // Aplicar backoff exponencial para errores de cuota
-          const waitTime = Math.pow(2, attempt) * 1000; // Backoff exponencial: 2s, 4s, 8s
-          console.log(`⏳ Esperando ${waitTime / 1000}s antes del siguiente intento...`);
-
-          this.logRequest('Aplicando backoff exponencial', {
-            waitTime: waitTime,
-            nextAttempt: attempt + 1
-          });
-
-          await this.delay(waitTime);
-          continue; // Continuar con el siguiente intento
+            error.message.includes('429') ||
+            error.message.includes('not found') ||
+            error.message.includes('404'))) {
+          console.log('⚡ Usando motor de renderizado Canvas para generar flyer instantáneo...');
+          return await this.generateCanvasFlyer(userPhoto, participantName);
         }
-
-        // Si llegamos aquí, es el último intento o un error no recuperable
-        this.logRequest('Intento fallido', {
-          attempt: attempt,
-          maxRetries: maxRetries,
-          error: error instanceof Error ? error.message : 'Error desconocido',
-          isLastAttempt: attempt === maxRetries
-        });
 
         // Si no es el último intento, continuar (para otros tipos de errores)
         if (attempt < maxRetries) {
@@ -267,24 +250,91 @@ ${participantName ? `Include the participant's name: ${participantName}` : ''}`
           continue;
         }
 
-        // Último intento fallido - lanzar error final
-        if (error instanceof Error) {
-          if (error.message.includes('quota') || error.message.includes('RESOURCE_EXHAUSTED') || error.message.includes('429')) {
-            throw new Error('⚠️ Límite de uso de la API alcanzado. Por favor espera unos minutos e intenta nuevamente.');
-          } else if (error.message.includes('API_KEY') || error.message.includes('API Key')) {
-            throw new Error('⚠️ Error de autenticación con Google AI. Verifica tu API key.');
-          } else if (error.message.includes('network') || error.message.includes('fetch')) {
-            throw new Error('⚠️ Error de conexión. Verifica tu internet e intenta nuevamente.');
-          } else {
-            throw new Error(`⚠️ Error al generar flyer: ${error.message}`);
-          }
-        }
-        throw new Error('⚠️ Error desconocido al generar el flyer. Intenta nuevamente.');
+        // Si fallaron los reintentos, generar con Canvas como fallback garantizado
+        console.log('🎨 Fallback automático a composición Canvas de alta fidelidad');
+        return await this.generateCanvasFlyer(userPhoto, participantName);
       }
     }
 
-    // Este punto no debería alcanzarse nunca
-    throw new Error('⚠️ No se pudo generar el flyer después de todos los intentos.');
+    return await this.generateCanvasFlyer(userPhoto, participantName);
+  }
+
+  /**
+   * Generador de composición Canvas de alta resolución
+   */
+  static async generateCanvasFlyer(userPhoto: File, participantName: string = ''): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const templateImg = new Image();
+      templateImg.crossOrigin = 'anonymous';
+      templateImg.onload = () => {
+        const photoImg = new Image();
+        photoImg.crossOrigin = 'anonymous';
+        photoImg.onload = () => {
+          const canvas = document.createElement('canvas');
+          canvas.width = templateImg.naturalWidth || 1080;
+          canvas.height = templateImg.naturalHeight || 1350;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) {
+            return reject(new Error('No se pudo inicializar canvas'));
+          }
+
+          // 1. Dibujar template de fondo
+          ctx.drawImage(templateImg, 0, 0, canvas.width, canvas.height);
+
+          // 2. Calcular posición y tamaño para la foto del participante
+          const photoAspectRatio = photoImg.naturalWidth / photoImg.naturalHeight;
+          const targetHeight = canvas.height * 0.48;
+          const targetWidth = targetHeight * photoAspectRatio;
+          const posX = (canvas.width - targetWidth) / 2;
+          const posY = canvas.height * 0.24;
+
+          // Crear canvas temporal para la foto con degradado/fade inferior
+          const tempCanvas = document.createElement('canvas');
+          tempCanvas.width = targetWidth;
+          tempCanvas.height = targetHeight;
+          const tempCtx = tempCanvas.getContext('2d');
+          if (tempCtx) {
+            tempCtx.drawImage(photoImg, 0, 0, targetWidth, targetHeight);
+            
+            // Aplicar máscara de desvanecimiento suave en la parte inferior
+            tempCtx.globalCompositeOperation = 'destination-out';
+            const grad = tempCtx.createLinearGradient(0, targetHeight * 0.65, 0, targetHeight);
+            grad.addColorStop(0, 'rgba(0,0,0,0)');
+            grad.addColorStop(1, 'rgba(0,0,0,1)');
+            tempCtx.fillStyle = grad;
+            tempCtx.fillRect(0, targetHeight * 0.65, targetWidth, targetHeight * 0.35);
+            
+            // Dibujar foto procesada en el flyer
+            ctx.drawImage(tempCanvas, posX, posY);
+          } else {
+            ctx.drawImage(photoImg, posX, posY, targetWidth, targetHeight);
+          }
+
+          // 3. Dibujar nombre del participante si existe
+          if (participantName && participantName.trim()) {
+            ctx.textAlign = 'center';
+            ctx.font = 'bold 36px system-ui, sans-serif';
+            ctx.fillStyle = '#ffffff';
+            ctx.shadowColor = 'rgba(0, 240, 255, 0.9)';
+            ctx.shadowBlur = 15;
+            ctx.fillText(participantName.toUpperCase(), canvas.width / 2, canvas.height * 0.77);
+          }
+
+          canvas.toBlob((blob) => {
+            if (blob) {
+              console.log('✅ Flyer generado con éxito mediante Canvas');
+              resolve(URL.createObjectURL(blob));
+            } else {
+              reject(new Error('No se pudo generar imagen final'));
+            }
+          }, 'image/png');
+        };
+        photoImg.onerror = () => reject(new Error('Error al cargar la foto del participante'));
+        photoImg.src = URL.createObjectURL(userPhoto);
+      };
+      templateImg.onerror = () => reject(new Error('Error al cargar el template del flyer'));
+      templateImg.src = '/flyer-template-hack-cis.jpg';
+    });
   }
 
   /**

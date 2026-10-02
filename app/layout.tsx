@@ -21,13 +21,13 @@ export default function RootLayout({
         <link rel="icon" href="https://i.postimg.cc/PqYBWw7b/LOGO-CIS-UNI-SIN-FONDO.png" />
         <link rel="shortcut icon" href="https://i.postimg.cc/PqYBWw7b/LOGO-CIS-UNI-SIN-FONDO.png" />
         <link rel="apple-touch-icon" href="https://i.postimg.cc/PqYBWw7b/LOGO-CIS-UNI-SIN-FONDO.png" />
-        <style>{`
+        <style dangerouslySetInnerHTML={{ __html: `
 html {
   font-family: ${GeistSans.style.fontFamily};
   --font-sans: ${GeistSans.variable};
   --font-mono: ${GeistMono.variable};
 }
-        `}</style>
+        ` }} />
       </head>
       <body>
         {children}

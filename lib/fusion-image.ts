@@ -29,7 +29,7 @@ async function main() {
   ];
 
   const response = await ai.models.generateContent({
-    model: "gemini-2.5-flash-image-preview",
+    model: "gemini-2.5-flash-image",
     contents: prompt,
   });
   for (const part of response.candidates[0].content.parts) {

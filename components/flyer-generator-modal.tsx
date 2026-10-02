@@ -98,7 +98,7 @@ export default function FlyerGeneratorModal({
 
             const link = document.createElement('a')
             link.href = url
-            link.download = `hack-cis-2025-${participantName.replace(/\s+/g, '-').toLowerCase()}.png`
+            link.download = `hack-cis-2026-${participantName.replace(/\s+/g, '-').toLowerCase()}.png`
             document.body.appendChild(link)
             link.click()
             document.body.removeChild(link)
@@ -124,8 +124,8 @@ export default function FlyerGeneratorModal({
         if (navigator.share) {
             try {
                 await navigator.share({
-                    title: 'Mi flyer para Hack[CIS] 2025',
-                    text: `¡Estoy participando en Hack[CIS] 2025! 🚀 #HackCIS2025`,
+                    title: 'Mi flyer para Hack[CIS] 2026',
+                    text: `¡Estoy participando en Hack[CIS] 2026! 🚀 #HackCIS2026`,
                     url: generatedFlyerUrl
                 })
             } catch (error) {
@@ -271,7 +271,7 @@ export default function FlyerGeneratorModal({
                                     ¡Tu flyer está listo! 🔥
                                 </h3>
                                 <p className="text-gray-400">
-                                    Compártelo en tus redes y muestra que estás en Hack[CIS] 2025
+                                    Compártelo en tus redes y muestra que estás en Hack[CIS] 2026
                                 </p>
                             </div>
 

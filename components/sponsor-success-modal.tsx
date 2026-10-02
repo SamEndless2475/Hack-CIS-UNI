@@ -35,7 +35,7 @@ export default function SponsorSuccessModal({
 
   const handleContactClick = () => {
     // Enlace para contactar al equipo organizador por WhatsApp
-    const message = `Hola! Soy ${contactName} de ${companyName}. Acabamos de registrarnos como patrocinadores del plan ${getPlanDisplayName(plan)} para Hack[CIS] 2025. Nos gustaría coordinar los detalles del patrocinio.`
+    const message = `Hola! Soy ${contactName} de ${companyName}. Acabamos de registrarnos como patrocinadores del plan ${getPlanDisplayName(plan)} para Hack[CIS] 2026. Nos gustaría coordinar los detalles del patrocinio.`
     const encodedMessage = encodeURIComponent(message)
     window.open(`https://wa.me/51955329623?text=${encodedMessage}`, "_blank")
   }

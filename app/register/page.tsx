@@ -325,7 +325,7 @@ export default function RegisterPage() {
         console.log("Registro completado exitosamente")
         toast({
           title: "¡Registro exitoso!",
-          description: "Te has registrado correctamente en Hack[CIS] 2025",
+          description: "Te has registrado correctamente en Hack[CIS] 2026",
         })
         setShowSuccessModal(true)
       } else {
@@ -462,7 +462,7 @@ export default function RegisterPage() {
                           ¡Es hora de crear tu flyer!
                         </p>
                         <p className="text-xs lg:text-sm text-gray-400">
-                          Sube tu foto y genera un flyer único para mostrar que estás en Hack[CIS] 2025
+                          Sube tu foto y genera un flyer único para mostrar que estás en Hack[CIS] 2026
                         </p>
                         <div className="flex justify-center items-center mb-4">
                           <Button

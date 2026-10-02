@@ -1,4 +1,4 @@
-# 🚀 Generador de Flyer Personalizado - Hack[CIS] 2025
+# 🚀 Generador de Flyer Personalizado - Hack[CIS] 2026
 
 ## ✨ Funcionalidad Implementada
 
@@ -119,7 +119,7 @@ Para probar la funcionalidad:
 
 ## 🎨 Próximos Pasos
 
-1. **Diseñar Template**: Crear el flyer oficial de Hack[CIS] 2025 (`flyer-template-hack-cis.jpg`)
+1. **Diseñar Template**: Crear el flyer oficial de Hack[CIS] 2026 (`flyer-template-hack-cis.jpg`)
 2. **Testing**: Probar con diferentes tipos de imágenes y personas
 3. **Optimización**: Ajustar el prompt de IA según resultados
 4. **Performance**: Monitorear tiempos de procesamiento

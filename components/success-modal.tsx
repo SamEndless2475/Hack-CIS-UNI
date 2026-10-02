@@ -73,7 +73,7 @@ export default function SuccessModal({ isOpen, onClose, participantName }: Succe
               </p>
               <div className="text-2xl font-bold">
                 <GradientText gradient="from-yellow-400 to-orange-400">
-                  Hack[CIS] 2025
+                  Hack[CIS] 2026
                 </GradientText>
               </div>
               <p className="text-gray-400">

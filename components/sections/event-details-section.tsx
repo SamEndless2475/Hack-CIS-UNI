@@ -22,7 +22,7 @@ export default function EventDetailsSection() {
                   </div>
                   <div>
                     <h3 className="text-xl font-semibold mb-2">Fecha y Duración</h3>
-                    <p className="text-gray-400">04-13 Marzo, 2025</p>
+                    <p className="text-gray-400">04-13 Marzo, 2026</p>
                     <p className="text-gray-400">240 horas de innovación continua</p>
                   </div>
                 </div>

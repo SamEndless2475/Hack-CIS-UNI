@@ -19,8 +19,8 @@ export default function CountdownTimer() {
   })
 
   useEffect(() => {
-    // 02/10/2025 12:00:00 hora Perú (PET = UTC-5) -> UTC 17:00:00
-    const targetTimestampUtc = Date.UTC(2025, 10, 2, 17, 0, 0)
+    // 02/10/2026 12:00:00 hora Perú (PET = UTC-5) -> UTC 17:00:00
+    const targetTimestampUtc = Date.UTC(2026, 10, 2, 17, 0, 0)
 
     const update = () => {
       const now = Date.now()
