@@ -1,64 +1,68 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
+
 import AnimatedCounter from "./animated-counter"
 import GradientText from "./gradient-text"
-import { toast } from "@/hooks/use-toast"
+import { obtenerEstadisticas } from "@/lib/api-registro"
+import { isSupabaseConfigured } from "@/lib/supabase/client"
 
+const CLAVE_CACHE = "hackcis_hacker_count"
+
+/**
+ * Contador de hackers registrados.
+ *
+ * Lee de Supabase (get_public_stats). Antes consultaba el backend de Render, que
+ * quedó respondiendo 503 y dejaba el contador en cero.
+ *
+ * El último valor se guarda en localStorage solo para no mostrar un 0 mientras
+ * carga; nunca es la fuente de verdad.
+ */
 export default function HackerCounter() {
-  const [hackerCount, setHackerCount] = useState<number>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('hackcis_hacker_count')
-      return saved ? parseInt(saved, 10) || 0 : 0
-    }
-    return 0
-  })
-
-  // Función para obtener el conteo de hackers
-  const fetchHackerCount = async () => {
-    try {
-      const API_BASE_URL = process.env.NEXT_PUBLIC_URL_BACKEND_HACK_CIS || 'https://hack-cis-uni-backend.onrender.com/api/v1/'
-      const response = await fetch(`${API_BASE_URL}user/count`)
-      
-      if (!response.ok) {
-        throw new Error(`Error ${response.status}: ${response.statusText}`)
-      }
-
-      const result = await response.json()
-      
-      if (result.total !== undefined) {
-        setHackerCount(result.total)
-        if (typeof window !== 'undefined') {
-          localStorage.setItem('hackcis_hacker_count', String(result.total))
-        }
-      }
-    } catch (error) {
-      console.error('Error al obtener conteo de hackers:', error)
-    }
-  }
+  const [conteo, setConteo] = useState(0)
 
   useEffect(() => {
-    // Obtener conteo inicial
-    fetchHackerCount()
-
-    // Actualizar cada 30 segundos
-    const interval = setInterval(() => {
-      fetchHackerCount()
-    }, 30000)
-
-    return () => clearInterval(interval)
+    try {
+      const guardado = localStorage.getItem(CLAVE_CACHE)
+      if (guardado) setConteo(Number.parseInt(guardado, 10) || 0)
+    } catch {
+      // Modo incógnito o almacenamiento bloqueado: arrancamos en 0.
+    }
   }, [])
+
+  const consultar = useCallback(async () => {
+    if (!isSupabaseConfigured()) return
+
+    try {
+      const stats = await obtenerEstadisticas()
+      if (typeof stats?.hackers !== "number") return
+
+      setConteo(stats.hackers)
+      try {
+        localStorage.setItem(CLAVE_CACHE, String(stats.hackers))
+      } catch {
+        /* sin almacenamiento, igual se muestra el valor */
+      }
+    } catch {
+      // Un fallo de red no debe ensuciar la consola del flujo feliz ni romper
+      // el home: se mantiene el último valor conocido y se reintenta solo.
+    }
+  }, [])
+
+  useEffect(() => {
+    consultar()
+    const id = setInterval(consultar, 30000)
+    return () => clearInterval(id)
+  }, [consultar])
 
   return (
     <div className="text-center space-y-2">
       <div className="text-4xl font-bold">
         <GradientText gradient="from-green-400 to-cyan-400">
-          <AnimatedCounter end={hackerCount} />
+          <AnimatedCounter end={conteo} />
         </GradientText>
       </div>
-      <div className="text-gray-400 text-sm uppercase tracking-wider">
-        Hackers Registrados
-      </div>
+      <div className="text-gray-400 text-sm uppercase tracking-wider">Hackers Registrados</div>
     </div>
   )
 }

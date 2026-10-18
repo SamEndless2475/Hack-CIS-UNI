@@ -9,6 +9,7 @@ import FloatingParticles from "@/components/floating-particles"
 import GradientText from "@/components/gradient-text"
 import { toast } from "@/hooks/use-toast"
 import SponsorSuccessModal from "@/components/sponsor-success-modal"
+import { registrarPatrocinador } from "@/lib/api-registro"
 
 interface Question {
   id: string
@@ -134,58 +135,28 @@ export default function SponsorsPage() {
       
       const mappedPlan = planMapping[answers.plan] || 'gold'
       
-      // Mapear las respuestas del formulario al formato de la API
-      const sponsorData = {
-        name: answers.name || '',
+      // Guarda directo en Supabase. Antes iba al backend de Render, que quedó
+      // respondiendo 503 y hacía que ninguna postulación llegara a ningún lado.
+      await registrarPatrocinador({
+        company_name: answers.name || '',
         email: answers.email || '',
         contact_name: answers.contact_name || '',
-        contact_lastname: answers.contact_lastname || '',
-        contact_phone: answers.contact_phone || '',
-        linkedin: answers.linkedin || '',
-        instagram: answers.instagram || '',
-        facebook: answers.facebook || '',
-        plan: mappedPlan
-      }
-
-      console.log("Datos del patrocinador a enviar:", sponsorData)
-
-      // Llamar a la API
-      const API_BASE_URL = process.env.NEXT_PUBLIC_URL_BACKEND_HACK_CIS || 'https://hack-cis-uni-backend.onrender.com/api/v1/'
-      const response = await fetch(`${API_BASE_URL}sponsor/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(sponsorData),
+        contact_lastname: answers.contact_lastname || undefined,
+        phone: answers.contact_phone || undefined,
+        linkedin: answers.linkedin || undefined,
+        instagram: answers.instagram || undefined,
+        facebook: answers.facebook || undefined,
+        plan: mappedPlan,
       })
 
-      // Verificar si la respuesta fue exitosa basándose en el status code
-      if (response.ok) {
-        // Status 200-299 indica éxito
-        console.log("Registro de patrocinador completado exitosamente")
-        setShowSuccessModal(true)
-      } else {
-        // Intentar obtener el mensaje de error del response
-        let errorMessage = "Error al enviar el registro. Por favor, intenta nuevamente."
-        try {
-          const result = await response.json()
-          errorMessage = result.message || errorMessage
-        } catch (e) {
-          // Si no se puede parsear el JSON, usar mensaje por defecto
-        }
-        
-        console.error("Error en el registro de patrocinador:", response.status, errorMessage)
-        toast({
-          title: "Error en el registro",
-          description: errorMessage,
-          variant: "destructive",
-        })
-      }
+      setShowSuccessModal(true)
     } catch (error) {
-      console.error("Error al enviar registro de patrocinador:", error)
       toast({
-        title: "Error de conexión",
-        description: "No se pudo enviar el registro. Verifica tu conexión a internet.",
+        title: "No se pudo enviar el registro",
+        description:
+          error instanceof Error
+            ? error.message
+            : "Revisa tu conexión a internet e intenta de nuevo.",
         variant: "destructive",
       })
     } finally {
