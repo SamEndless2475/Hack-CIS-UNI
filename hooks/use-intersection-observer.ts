@@ -8,13 +8,19 @@ interface UseIntersectionObserverOptions {
   triggerOnce?: boolean
 }
 
-export function useIntersectionObserver(
+/**
+ * El tipo del elemento es genérico y por defecto es HTMLDivElement: así el ref
+ * se puede pasar directo a un <div> sin que TypeScript se queje. Antes estaba
+ * fijo en HTMLElement, que no es asignable a RefObject<HTMLDivElement>, y por eso
+ * cada sección que usaba este hook daba error de tipos.
+ */
+export function useIntersectionObserver<T extends HTMLElement = HTMLDivElement>(
   options: UseIntersectionObserverOptions = {}
 ) {
   const { threshold = 0.1, rootMargin = "0px", triggerOnce = true } = options
   const [isIntersecting, setIsIntersecting] = useState(false)
   const [hasTriggered, setHasTriggered] = useState(false)
-  const ref = useRef<HTMLElement>(null)
+  const ref = useRef<T>(null)
 
   useEffect(() => {
     const element = ref.current

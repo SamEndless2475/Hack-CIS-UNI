@@ -27,11 +27,20 @@ Se ha agregado una nueva funcionalidad al formulario de registro que permite a l
 
 ## ⚙️ Configuración Requerida
 
-### 1. API Key de Google Generative AI (Ya configurada ✅)
+### 1. API Key de Google Generative AI
 ```bash
-# En .env.local
-NEXT_PUBLIC_GOOGLE_GENERATIVE_AI_API_KEY= AIzaSyAeQ0P4lStZF__N__8EUyyGSjnnQ2dHiho
+# En .env.local (nunca en el repo)
+NEXT_PUBLIC_GOOGLE_GENERATIVE_AI_API_KEY=<tu-key>
 ```
+
+> ⚠️ **Aquí estuvo escrita una key real**, y sigue en el historial de git de este
+> repositorio público. Borrarla de este archivo **no la invalida**: hay que
+> revocarla en Google AI Studio / Google Cloud y generar una nueva.
+>
+> Además, al llevar el prefijo `NEXT_PUBLIC_`, esta key queda visible en el
+> navegador de cualquier visitante. Debe tener cuota y restricciones de dominio,
+> y nunca ser la misma que una key administrativa. Lo correcto es mover la
+> generación de imágenes al servidor.
 
 ### 2. Template del Flyer
 Coloca tu template en: `public/flyer-template-hack-cis.jpg`
